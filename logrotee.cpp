@@ -252,25 +252,29 @@ void Logrotatee::rotateLog() {
 }
 
 void Logrotatee::go() {
-	char buffer[BUF_SIZE];
+	char *line = NULL;
+	size_t length = 0;
+	ssize_t read;
 	
 	rotateLog();
-	for(char *s = fgets(buffer, BUF_SIZE, stdin); s != nullptr; s = fgets(buffer, BUF_SIZE, stdin)) {
-		fputs(s, logFile);
+	bytesInChunk = 0;
+
+	while((read = getline(&line, &length, stdin)) != -1) {
+		if (length == 0) {
+			continue;
+		}
+
+		fputs(line, logFile);
+
 		if (!commandArgs.nullStdout) {
-			fputs(s, stdout);
+			fputs(line, stdout);
 		}
 		
-		// As much as we want to avoid extra scanning, we need to know when to rotate logs.
-		size_t length = strlen(s);
 		bytesInChunk += length;
-		if (length > 0 && bytesInChunk >= commandArgs.chunkSize) {
-			bool isLineBreak = s[length - 1] == '\n';
-			bool breakAnyway = bytesInChunk >= commandArgs.chunkSize * 12 / 10;
-			if (isLineBreak || breakAnyway) {
-				rotateLog();
-				bytesInChunk = 0;
-			}
+
+		if (bytesInChunk >= commandArgs.chunkSize) {
+			rotateLog();
+			bytesInChunk = 0;
 		}
 	}
 	
