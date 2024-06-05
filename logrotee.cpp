@@ -265,9 +265,11 @@ void Logrotatee::go() {
 		}
 
 		fputs(line, logFile);
+		fflush(logFile);
 
 		if (!commandArgs.nullStdout) {
 			fputs(line, stdout);
+			fflush(stdout);
 		}
 		
 		bytesInChunk += length;
