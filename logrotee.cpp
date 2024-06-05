@@ -154,14 +154,26 @@ bool fileExists(const string& name) {
 
 string Logrotatee::getNewChunkName() {
 	string name;
-	do {
-		nameSuffix++;
-		char buffer[32];
-		snprintf(buffer, 32, ".%d", nameSuffix);
-		name = commandArgs.logFilePath + buffer;
-		// Hmm, a race condition. Hopefully no one else creates these files, or
-		// we'll lose one of them.
-	} while (fileExists(name) || fileExists(name + commandArgs.compressSuffix));
+	char buffer[32];
+
+	snprintf(buffer, 32, ".%d", nameSuffix);
+	name = commandArgs.logFilePath + buffer;
+	// Hmm, a race condition. Hopefully no one else creates these files, or
+	// we'll lose one of them.
+	
+	if (fileExists(name)) {
+		std::remove(name.c_str());
+	}
+
+       	if (fileExists(name + commandArgs.compressSuffix)) {
+		std::remove((name + commandArgs.compressSuffix).c_str());
+	}
+
+	nameSuffix++;
+
+	if (nameSuffix >= commandArgs.maxFiles) {
+		nameSuffix = 0;
+	}
 	
 	return name;
 }
