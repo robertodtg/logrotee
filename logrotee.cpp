@@ -30,7 +30,7 @@ struct Arguments {
 	ssize_t maxFiles;
 
 private:
-	bool invalid;
+	bool invalid = false;
 	
 public:
 	Arguments(int argc, char *argv[])
@@ -104,6 +104,7 @@ public:
 		
 		if (optind < argc) {
 			logFilePath = argv[optind];
+			std::cout << logFilePath;
 			optind++;
 			while (optind < argc) {
 				invalid = true;
